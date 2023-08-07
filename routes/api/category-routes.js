@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Define the `/api/categories/:id` endpoint for handling GET requests
+// Define the `/api/categories/:id` endpoint for handling GET requestsjn 
 router.get('/:id', async (req, res) => {
   // Find a category by its `id` value and include its associated products
   try {
@@ -42,16 +42,26 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Define the `/api/categories/:id` endpoint for handling PUT requests
 router.put('/:id', async (req, res) => {
   // Update a category with the provided `id` using the data from the request body
   try {
-    await Category.update(req.body, {
+    // Perform the update operation
+    const [rowsUpdated] = await Category.update(req.body, {
       where: {
         id: req.params.id,
       },
-    })
-    res.status(200).json(categoryData);
+    });
+
+    // Check if any rows were actually updated
+    if (rowsUpdated === 0) {
+      return res.status(404).json({ error: 'Category not found.' });
+    }
+
+    // Fetch the updated category data from the database
+    const updatedCategory = await Category.findByPk(req.params.id);
+
+    // Respond with the updated category data
+    res.status(200).json(updatedCategory);
   } catch (err) {
     // Handle any errors that occur during the update
     res.status(500).json(err);
@@ -67,7 +77,7 @@ router.delete('/:id', async (req, res) => {
         id: req.params.id,
       },
     })
-    res.status(204)
+    res.status(204).end()
   } catch (err) {
     // Handle any errors that occur during the deletion
     res.status(500).json(err);
